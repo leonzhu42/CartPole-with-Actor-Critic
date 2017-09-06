@@ -6,12 +6,15 @@ import gym
 actor_network_verbose = False
 update_gradients_verbose = False
 
-actor_learning_rate = 0.0001
-critic_learning_rate = 0.00008 # Slightly less than actor_learning_rate
+# They seem to be the best parameters :)
 
-n_episode = 1000
-max_step = 1000
+actor_learning_rate = 0.0003
+critic_learning_rate = 0.00025 # Slightly less than actor_learning_rate
+
+n_episode = 1500
 gamma = 0.99
+
+num_tests = 50
 
 observation_placeholder = tf.placeholder(tf.float32, shape=[None, 4])
 W1_actor = tf.get_variable('W1_actor', shape=[4, 64])
@@ -94,7 +97,7 @@ with tf.Session() as sess:
         memory = []
         discount = 1.0
         step = 0
-        while not done and step < max_step:
+        while not done:
             action = actor_network(observation, sess, verbose=actor_network_verbose)
             next_observation, next_reward, next_done, _ = env.step(action)
             if next_done:
@@ -118,7 +121,8 @@ with tf.Session() as sess:
     # Test
     input('Press Enter to start testing!')
     print('Testing...')
-    for episode in range(5):
+    rewards_sum = 0.0
+    for episode in range(num_tests):
         observation = env.reset()
         reward = 0
         done = False
@@ -130,5 +134,9 @@ with tf.Session() as sess:
             total_reward += next_reward
             observation, reward, done = next_observation, next_reward, next_done
         print('Reward:', total_reward)
+        rewards_sum += total_reward
+    print('Testing done!')
+    print('Average reward:', rewards_sum / num_tests)
 
     env.close()
+    
